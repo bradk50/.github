@@ -1,0 +1,6 @@
+{
+  "name": "Claude Code",
+  "description": "Let @claude in an issue or pull request run Claude Code on this repo, through the shared root workflow in bradk50/.github.",
+  "iconName": "code",
+  "categories": ["Automation", "Continuous integration"]
+}

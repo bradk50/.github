@@ -1,0 +1,62 @@
+name: Claude Code (shared)
+
+# ROOT WORKFLOW — nothing runs from this file directly.
+# Each repo adds a thin caller that points here:
+#
+#   uses: bradk50/.github/.github/workflows/claude.yml@main
+#   secrets: inherit
+#
+# Change the Claude Code setup once here and every calling repo follows.
+
+on:
+  workflow_call:
+    inputs:
+      auth:
+        description: "Credential to use: 'oauth' (Claude subscription token) or 'api_key' (Console key)."
+        required: false
+        type: string
+        default: oauth
+      prompt:
+        description: "Leave empty for interactive mode (@claude mentions). Set it to run unattended."
+        required: false
+        type: string
+        default: ""
+      claude_args:
+        description: "Extra Claude Code CLI args, e.g. '--model claude-sonnet-5 --max-turns 20'."
+        required: false
+        type: string
+        default: ""
+      allowed_bots:
+        description: "Comma-separated bot logins allowed to trigger runs (only needed if an app/bot comments @claude)."
+        required: false
+        type: string
+        default: ""
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ inputs.auth == 'oauth' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
+          anthropic_api_key: ${{ inputs.auth == 'api_key' && secrets.ANTHROPIC_API_KEY || '' }}
+          prompt: ${{ inputs.prompt }}
+          allowed_bots: ${{ inputs.allowed_bots }}
+          claude_args: ${{ inputs.claude_args }}
